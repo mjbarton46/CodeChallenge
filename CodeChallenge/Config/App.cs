@@ -29,6 +29,11 @@ namespace CodeChallenge.Config
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+
+                // Added Swagger UI for easier way to make API calls
+                // https://learn.microsoft.com/en-us/aspnet/core/tutorials/getting-started-with-swashbuckle?view=aspnetcore-8.0&tabs=visual-studio
+                app.UseSwagger();
+                app.UseSwaggerUI();
                 SeedEmployeeDB();
             }
 
@@ -46,6 +51,9 @@ namespace CodeChallenge.Config
             services.AddScoped<IEmployeeRepository, EmployeeRespository>();
 
             services.AddControllers();
+
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
         }
 
         private void SeedEmployeeDB()
