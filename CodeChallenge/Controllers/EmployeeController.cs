@@ -64,5 +64,18 @@ namespace CodeChallenge.Controllers
 
             return Ok(newEmployee);
         }
+
+        [HttpGet("{id}/reports")]
+        public IActionResult GetEmployeeDirectReports(string id)
+        {
+            _logger.LogDebug("Received employee reports get request for '{id}'", id);
+
+            var employeeDirectReports = _employeeService.GetDirectReports(id);
+
+            if (employeeDirectReports == null)
+                return NotFound();
+
+            return Ok(employeeDirectReports);
+        }
     }
 }

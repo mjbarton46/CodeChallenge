@@ -148,5 +148,35 @@ namespace CodeCodeChallenge.Tests.Integration
             // Assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
         }
+
+        [TestMethod]
+        [DataRow("16a596ae-edd3-4847-99fe-c4518e82c86f", 4)]
+        [DataRow("b7839309-3348-463b-a7e3-5de1c168beb3", 0)]
+        [DataRow("03aa1462-ffa9-4978-901b-7c001562cf6f", 2)]
+        [DataRow("62c1084e-6e34-4630-93fd-9153afb65309", 0)]
+        [DataRow("c0c2293d-16bd-4603-8e08-638a9d18b22c", 0)]
+        public void GetEmployeeDirectReports_ValidEmployeeId_ReturnsCorrectNumberOfReports(string employeeId, int expectedDirectReports)
+        {
+            // Execute
+            var getRequestTask = _httpClient.GetAsync($"api/employees/{employeeId}/reports");
+            var response = getRequestTask.Result;
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            var reportingStructure = response.DeserializeContent<ReportingStructure>();
+            Assert.AreEqual(employeeId, reportingStructure.Employee.EmployeeId);
+            Assert.AreEqual(expectedDirectReports, reportingStructure.NumberOfReports);
+        }
+
+        [TestMethod]
+        public void GetEmployeeDirectReports_NonexistingEmployeeId_ReturnsNotFound()
+        {
+            // Execute
+            var getRequestTask = _httpClient.GetAsync($"api/employees/doesnotexist/reports");
+            var response = getRequestTask.Result;
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+        }
     }
 }

@@ -9,5 +9,6 @@ namespace CodeChallenge.Services
         List<Employee> GetAll();
         Employee Create(Employee employee);
         Employee Replace(Employee originalEmployee, Employee newEmployee);
+        ReportingStructure GetDirectReports(string id);
     }
 }
