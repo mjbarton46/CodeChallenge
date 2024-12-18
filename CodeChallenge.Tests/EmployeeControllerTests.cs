@@ -81,6 +81,22 @@ namespace CodeCodeChallenge.Tests.Integration
             var employee = response.DeserializeContent<Employee>();
             Assert.AreEqual(expectedFirstName, employee.FirstName);
             Assert.AreEqual(expectedLastName, employee.LastName);
+
+            Assert.IsNotNull(employee.DirectReports);
+            Assert.AreEqual(2, employee.DirectReports.Count);
+
+            var paulMcCartney = employee.DirectReports[0];
+            Assert.IsNull(paulMcCartney.DirectReports);
+
+            var ringoStarr = employee.DirectReports[1];
+            Assert.IsNotNull(ringoStarr.DirectReports);
+            Assert.AreEqual(2, ringoStarr.DirectReports.Count);
+
+            var peteBest = ringoStarr.DirectReports[0];
+            Assert.IsNull(peteBest.DirectReports);
+
+            var georgeHarrison = ringoStarr.DirectReports[1];
+            Assert.IsNull(georgeHarrison.DirectReports);
         }
 
         [TestMethod]

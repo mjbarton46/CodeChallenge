@@ -28,7 +28,29 @@ namespace CodeChallenge.Repositories
 
         public Employee GetById(string id)
         {
-            return _employeeContext.Employees.SingleOrDefault(e => e.EmployeeId == id);
+            var employee = _employeeContext.Employees.SingleOrDefault(e => e.EmployeeId == id);
+            LoadDirectReports(employee); // Direct reports aren't loaded because of lazy loading, force load here
+            return employee;
+        }
+
+        private void LoadDirectReports(Employee employee)
+        {
+            if (employee == null)
+                return;
+
+            _employeeContext.Entry(employee).Collection(e => e.DirectReports).Load();
+
+            // Instead of empty list that is created from Load() above, use null to match what GetAll() returns
+            if(employee.DirectReports.Count == 0)
+            {
+                employee.DirectReports = null;
+                return;
+            }
+
+            foreach(var report in employee.DirectReports)
+            {
+                LoadDirectReports(report);
+            }
         }
 
         public List<Employee> GetAll()
