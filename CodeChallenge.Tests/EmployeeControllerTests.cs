@@ -49,7 +49,7 @@ namespace CodeCodeChallenge.Tests.Integration
             var requestContent = new JsonSerialization().ToJson(employee);
 
             // Execute
-            var postRequestTask = _httpClient.PostAsync("api/employee",
+            var postRequestTask = _httpClient.PostAsync("api/employees",
                new StringContent(requestContent, Encoding.UTF8, "application/json"));
             var response = postRequestTask.Result;
 
@@ -73,7 +73,7 @@ namespace CodeCodeChallenge.Tests.Integration
             var expectedLastName = "Lennon";
 
             // Execute
-            var getRequestTask = _httpClient.GetAsync($"api/employee/{employeeId}");
+            var getRequestTask = _httpClient.GetAsync($"api/employees/{employeeId}");
             var response = getRequestTask.Result;
 
             // Assert
@@ -98,7 +98,7 @@ namespace CodeCodeChallenge.Tests.Integration
             var requestContent = new JsonSerialization().ToJson(employee);
 
             // Execute
-            var putRequestTask = _httpClient.PutAsync($"api/employee/{employee.EmployeeId}",
+            var putRequestTask = _httpClient.PutAsync($"api/employees/{employee.EmployeeId}",
                new StringContent(requestContent, Encoding.UTF8, "application/json"));
             var putResponse = putRequestTask.Result;
             
@@ -125,7 +125,7 @@ namespace CodeCodeChallenge.Tests.Integration
             var requestContent = new JsonSerialization().ToJson(employee);
 
             // Execute
-            var postRequestTask = _httpClient.PutAsync($"api/employee/{employee.EmployeeId}",
+            var postRequestTask = _httpClient.PutAsync($"api/employees/{employee.EmployeeId}",
                new StringContent(requestContent, Encoding.UTF8, "application/json"));
             var response = postRequestTask.Result;
 

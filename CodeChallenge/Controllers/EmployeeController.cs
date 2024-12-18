@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using CodeChallenge.Models;
+using CodeChallenge.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using CodeChallenge.Services;
-using CodeChallenge.Models;
 
 namespace CodeChallenge.Controllers
 {
     [ApiController]
-    [Route("api/employee")]
+    [Route("api/employees")]
     public class EmployeeController : ControllerBase
     {
         private readonly ILogger _logger;
@@ -25,7 +21,7 @@ namespace CodeChallenge.Controllers
         [HttpPost]
         public IActionResult CreateEmployee([FromBody] Employee employee)
         {
-            _logger.LogDebug($"Received employee create request for '{employee.FirstName} {employee.LastName}'");
+            _logger.LogDebug("Received employee create request for '{firstName} {lastName}'", employee.FirstName, employee.LastName);
 
             _employeeService.Create(employee);
 
@@ -33,9 +29,9 @@ namespace CodeChallenge.Controllers
         }
 
         [HttpGet("{id}", Name = "getEmployeeById")]
-        public IActionResult GetEmployeeById(String id)
+        public IActionResult GetEmployeeById(string id)
         {
-            _logger.LogDebug($"Received employee get request for '{id}'");
+            _logger.LogDebug("Received employee get request for '{id}'", id);
 
             var employee = _employeeService.GetById(id);
 
@@ -45,10 +41,20 @@ namespace CodeChallenge.Controllers
             return Ok(employee);
         }
 
-        [HttpPut("{id}")]
-        public IActionResult ReplaceEmployee(String id, [FromBody]Employee newEmployee)
+        [HttpGet()]
+        public IActionResult GetAllEmployees()
         {
-            _logger.LogDebug($"Recieved employee update request for '{id}'");
+            _logger.LogDebug("Received employee get all request");
+
+            var employees = _employeeService.GetAll();
+
+            return Ok(employees);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult ReplaceEmployee(string id, [FromBody]Employee newEmployee)
+        {
+            _logger.LogDebug("Recieved employee update request for '{id}'", id);
 
             var existingEmployee = _employeeService.GetById(id);
             if (existingEmployee == null)

@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using CodeChallenge.Models;
-using Microsoft.Extensions.Logging;
 using CodeChallenge.Repositories;
+using Microsoft.Extensions.Logging;
 
 namespace CodeChallenge.Services
 {
@@ -32,12 +29,17 @@ namespace CodeChallenge.Services
 
         public Employee GetById(string id)
         {
-            if(!String.IsNullOrEmpty(id))
+            if(!string.IsNullOrEmpty(id))
             {
                 return _employeeRepository.GetById(id);
             }
 
             return null;
+        }
+
+        public List<Employee> GetAll()
+        {
+            return _employeeRepository.GetAll();
         }
 
         public Employee Replace(Employee originalEmployee, Employee newEmployee)

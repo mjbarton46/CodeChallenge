@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CodeChallenge.Data;
 using CodeChallenge.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-using CodeChallenge.Data;
 
 namespace CodeChallenge.Repositories
 {
@@ -30,6 +29,11 @@ namespace CodeChallenge.Repositories
         public Employee GetById(string id)
         {
             return _employeeContext.Employees.SingleOrDefault(e => e.EmployeeId == id);
+        }
+
+        public List<Employee> GetAll()
+        {
+            return _employeeContext.Employees.ToList();
         }
 
         public Task SaveAsync()
