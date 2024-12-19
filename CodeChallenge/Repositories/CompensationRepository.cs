@@ -15,9 +15,16 @@ namespace CodeChallenge.Repositories
             _employeeContext = employeeContext;
         }
 
-        public List<Compensation> GetCompensations(string id)
+        public Compensation Add(Compensation compensation)
         {
-            return _employeeContext.Compensations.Where(c => string.Equals(c.Employee.EmployeeId, id)).ToList();
+            _employeeContext.Compensations.Add(compensation);
+            _employeeContext.SaveChanges(); // In production, would add error handling to catch primary key violations, etc.
+            return compensation;
+        }
+
+        public List<Compensation> GetByEmployeeId(string id)
+        {
+            return _employeeContext.Compensations.Where(c => string.Equals(c.EmployeeId, id)).ToList();
         }
     }
 }

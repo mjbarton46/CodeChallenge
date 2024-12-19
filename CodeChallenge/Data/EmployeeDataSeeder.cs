@@ -80,23 +80,7 @@ namespace CodeChallenge.Data
             using (JsonReader jr = new JsonTextReader(sr))
             {
                 JsonSerializer serializer = new JsonSerializer();
-
-                List<Compensation> compensations = serializer.Deserialize<List<Compensation>>(jr);
-                FixUpReferences(compensations);
-
-                return compensations;
-            }
-        }
-
-        private void FixUpReferences(List<Compensation> compensations)
-        {
-            foreach (var compensation in compensations)
-            {
-                if(compensation.Employee?.EmployeeId != null)
-                {
-                    compensation.Employee =
-                        _employeeContext.Employees.SingleOrDefault(e => string.Equals(e.EmployeeId, compensation.Employee.EmployeeId));
-                }
+                return serializer.Deserialize<List<Compensation>>(jr);
             }
         }
     }

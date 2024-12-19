@@ -82,12 +82,22 @@ namespace CodeChallenge.Services
             return null;
         }
 
-        public ApiResponse GetCompensations(string id)
+        public ApiResponse CreateCompensation(Compensation compensation)
         {
-            if (GetById(id) == null)
+            // Realistically EmployeeId should never be null since it was passed in route, being overly cautious in that first part of the OR
+            if (string.IsNullOrEmpty(compensation.EmployeeId) || GetById(compensation.EmployeeId) == null)
                 return ApiResponse.NotFound;
 
-            var compensations = _compensationRepository.GetCompensations(id);
+            var createdCompensation = _compensationRepository.Add(compensation);
+            return ApiResponse.Ok(createdCompensation);
+        }
+
+        public ApiResponse GetCompensations(string id)
+        {
+            if (string.IsNullOrEmpty(id) || GetById(id) == null)
+                return ApiResponse.NotFound;
+
+            var compensations = _compensationRepository.GetByEmployeeId(id);
             return ApiResponse.Ok(compensations ?? new List<Compensation>());
         }
 

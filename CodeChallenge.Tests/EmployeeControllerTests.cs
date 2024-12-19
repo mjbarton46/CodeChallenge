@@ -101,6 +101,9 @@ namespace CodeCodeChallenge.Tests.Integration
             Assert.IsNull(georgeHarrison.DirectReports);
         }
 
+        // Warning: This test will break the GetEmployeeDirectReports_ValidEmployeeId_ReturnsCorrectNumberOfReports if they are execute
+        // in the same test run because it will remove this employee's direct reports as a result of the PUT. A production refactor of
+        // these tests would be to ensure they are isolated from one another by reverting the effects of this test.
         [TestMethod]
         public void UpdateEmployee_Returns_Ok()
         {
@@ -198,14 +201,12 @@ namespace CodeCodeChallenge.Tests.Integration
             var compensations = response.DeserializeContent<List<Compensation>>();
             Assert.AreEqual(2, compensations.Count);
 
-            Assert.IsNotNull(compensations[1].Employee?.EmployeeId);
-            Assert.AreEqual(employeeId, compensations[1].Employee.EmployeeId);
+            Assert.AreEqual(employeeId, compensations[1].EmployeeId);
             Assert.AreEqual(exepectedCompensation1.Salary, compensations[1].Salary);
             Assert.AreEqual(exepectedCompensation1.EffectiveDate, compensations[1].EffectiveDate);
             // Could write private helpers to compare Compensation objects (and other classes too)
 
-            Assert.IsNotNull(compensations[0].Employee?.EmployeeId);
-            Assert.AreEqual(employeeId, compensations[0].Employee.EmployeeId);
+            Assert.AreEqual(employeeId, compensations[0].EmployeeId);
             Assert.AreEqual(exepectedCompensation2.Salary, compensations[0].Salary);
             Assert.AreEqual(exepectedCompensation2.EffectiveDate, compensations[0].EffectiveDate);
         }
@@ -226,8 +227,7 @@ namespace CodeCodeChallenge.Tests.Integration
             var compensations = response.DeserializeContent<List<Compensation>>();
             Assert.AreEqual(1, compensations.Count);
 
-            Assert.IsNotNull(compensations[0].Employee?.EmployeeId);
-            Assert.AreEqual(employeeId, compensations[0].Employee.EmployeeId);
+            Assert.AreEqual(employeeId, compensations[0].EmployeeId);
             Assert.AreEqual(exepectedCompensation1.Salary, compensations[0].Salary);
             Assert.AreEqual(exepectedCompensation1.EffectiveDate, compensations[0].EffectiveDate);
         }
@@ -255,6 +255,82 @@ namespace CodeCodeChallenge.Tests.Integration
             // Execute
             var getRequestTask = _httpClient.GetAsync($"api/employees/doesnotexist/compensations");
             var response = getRequestTask.Result;
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [TestMethod]
+        public void CreateEmployeeCompensation_CompensationDidNotAlreadyExist_CreatedAndReturned()
+        {
+            // Arrange
+            var employeeId = "16a596ae-edd3-4847-99fe-c4518e82c86f";
+            var effectiveDate = DateTime.Now;
+            var compensation = new Compensation
+            {
+                Salary = 100,
+                EffectiveDate = effectiveDate
+            };
+
+            var requestContent = new JsonSerialization().ToJson(compensation);
+
+            // Execute
+            var postRequestTask = _httpClient.PostAsync($"api/employees/{employeeId}/compensations",
+               new StringContent(requestContent, Encoding.UTF8, "application/json"));
+            var response = postRequestTask.Result;
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+
+            var newCompensation = response.DeserializeContent<Compensation>();
+            Assert.AreEqual(4, newCompensation.CompensationId);
+            Assert.AreEqual(employeeId, newCompensation.EmployeeId);
+            Assert.AreEqual(compensation.Salary, newCompensation.Salary);
+            Assert.AreEqual(compensation.EffectiveDate, newCompensation.EffectiveDate);
+        }
+
+        [TestMethod]
+        public void CreateEmployeeCompensation_CompensationIdAlreadyExists_ReturnsInternalServerError()
+        {
+            // Arrange
+            var employeeId = "16a596ae-edd3-4847-99fe-c4518e82c86f";
+            var effectiveDate = DateTime.Now;
+            var compensation = new Compensation
+            {
+                CompensationId = 1,
+                Salary = 100,
+                EffectiveDate = effectiveDate
+            };
+
+            var requestContent = new JsonSerialization().ToJson(compensation);
+
+            // Execute
+            var postRequestTask = _httpClient.PostAsync($"api/employees/{employeeId}/compensations",
+               new StringContent(requestContent, Encoding.UTF8, "application/json"));
+            var response = postRequestTask.Result;
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.InternalServerError, response.StatusCode);
+        }
+
+        [TestMethod]
+        public void CreateEmployeeCompensation_EmployeeDoesNotExist_ReturnsNotFound()
+        {
+            // Arrange
+            var employeeId = "doesnotexist";
+            var effectiveDate = DateTime.Now;
+            var compensation = new Compensation
+            {
+                Salary = 100,
+                EffectiveDate = effectiveDate
+            };
+
+            var requestContent = new JsonSerialization().ToJson(compensation);
+
+            // Execute
+            var postRequestTask = _httpClient.PostAsync($"api/employees/{employeeId}/compensations",
+               new StringContent(requestContent, Encoding.UTF8, "application/json"));
+            var response = postRequestTask.Result;
 
             // Assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);

@@ -5,6 +5,7 @@ namespace CodeChallenge.Repositories
 {
     public interface ICompensationRepository
     {
-        List<Compensation> GetCompensations(string id);
+        Compensation Add(Compensation compensation);
+        List<Compensation> GetByEmployeeId(string id);
     }
 }

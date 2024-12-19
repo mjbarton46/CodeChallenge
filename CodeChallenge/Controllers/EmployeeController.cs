@@ -31,7 +31,7 @@ namespace CodeChallenge.Controllers
         }
 
         [HttpGet("{id}", Name = "getEmployeeById")]
-        public IActionResult GetEmployeeById(string id)
+        public IActionResult GetEmployeeById([FromRoute] string id)
         {
             _logger.LogDebug("Received employee get request for '{id}'", id);
 
@@ -54,7 +54,7 @@ namespace CodeChallenge.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult ReplaceEmployee(string id, [FromBody]Employee newEmployee)
+        public IActionResult ReplaceEmployee([FromRoute] string id, [FromBody] Employee newEmployee)
         {
             _logger.LogDebug("Recieved employee update request for '{id}'", id);
 
@@ -68,7 +68,7 @@ namespace CodeChallenge.Controllers
         }
 
         [HttpGet("{id}/reports")]
-        public IActionResult GetEmployeeDirectReports(string id)
+        public IActionResult GetEmployeeDirectReports([FromRoute] string id)
         {
             _logger.LogDebug("Received employee reports get request for '{id}'", id);
 
@@ -80,8 +80,22 @@ namespace CodeChallenge.Controllers
             return Ok(employeeDirectReports);
         }
 
+        [HttpPost("{id}/compensations")]
+        public ActionResult<Compensation> CreateEmployeeCompensation([FromRoute] string id, [FromBody] Compensation compensation)
+        {
+            _logger.LogDebug("Received compensation create request for id '{id}'", id);
+
+            compensation.EmployeeId = id;
+            ApiResponse response = _employeeService.CreateCompensation(compensation);
+            return ParseApiResponse<Compensation>(response);
+
+            // Just returning simple Ok status code for now to avoid creating another endpoint...
+            // To do the CreatedAtRoute, I would create another endpoint GET /api/employees/{employeeId}/compensations/{compensationId}
+            //return CreatedAtRoute("getCompensationByEmployeeAndCompensationId", new { employeeId = id, compensationId = compensation.Id }, compensation);
+        }
+
         [HttpGet("{id}/compensations")]
-        public ActionResult<List<Compensation>> GetEmployeeCompensations(string id)
+        public ActionResult<List<Compensation>> GetEmployeeCompensations([FromRoute] string id)
         {
             _logger.LogDebug("Received employee compensation get request for '{id}'", id);
 
