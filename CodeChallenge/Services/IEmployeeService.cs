@@ -10,5 +10,6 @@ namespace CodeChallenge.Services
         Employee Create(Employee employee);
         Employee Replace(Employee originalEmployee, Employee newEmployee);
         ReportingStructure GetDirectReports(string id);
+        ApiResponse GetCompensations(string id);
     }
 }

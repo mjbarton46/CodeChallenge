@@ -9,8 +9,9 @@ namespace CodeChallenge.Data
 {
     public class EmployeeDataSeeder
     {
-        private EmployeeContext _employeeContext;
+        private readonly EmployeeContext _employeeContext;
         private const string EMPLOYEE_SEED_DATA_FILE = "resources/EmployeeSeedData.json";
+        private const string COMPENSATION_SEED_DATA_FILE = "resources/CompensationSeedData.json";
 
         public EmployeeDataSeeder(EmployeeContext employeeContext)
         {
@@ -23,6 +24,14 @@ namespace CodeChallenge.Data
             {
                 List<Employee> employees = LoadEmployees();
                 _employeeContext.Employees.AddRange(employees);
+
+                await _employeeContext.SaveChangesAsync();
+            }
+
+            if (!_employeeContext.Compensations.Any())
+            {
+                List<Compensation> compensations = LoadCompensations();
+                _employeeContext.Compensations.AddRange(compensations);
 
                 await _employeeContext.SaveChangesAsync();
             }
@@ -62,6 +71,33 @@ namespace CodeChallenge.Data
                     employee.DirectReports = referencedEmployees;
                 }
             });
+        }
+
+        private List<Compensation> LoadCompensations()
+        {
+            using (FileStream fs = new FileStream(COMPENSATION_SEED_DATA_FILE, FileMode.Open))
+            using (StreamReader sr = new StreamReader(fs))
+            using (JsonReader jr = new JsonTextReader(sr))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+
+                List<Compensation> compensations = serializer.Deserialize<List<Compensation>>(jr);
+                FixUpReferences(compensations);
+
+                return compensations;
+            }
+        }
+
+        private void FixUpReferences(List<Compensation> compensations)
+        {
+            foreach (var compensation in compensations)
+            {
+                if(compensation.Employee?.EmployeeId != null)
+                {
+                    compensation.Employee =
+                        _employeeContext.Employees.SingleOrDefault(e => string.Equals(e.EmployeeId, compensation.Employee.EmployeeId));
+                }
+            }
         }
     }
 }

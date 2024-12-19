@@ -1,4 +1,6 @@
 
+using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -173,6 +175,85 @@ namespace CodeCodeChallenge.Tests.Integration
         {
             // Execute
             var getRequestTask = _httpClient.GetAsync($"api/employees/doesnotexist/reports");
+            var response = getRequestTask.Result;
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [TestMethod]
+        public void GetEmployeeCompensations_EmployeeWithMultipleCompensations_ReturnsCompensations()
+        {
+            // Arrange
+            var employeeId = "16a596ae-edd3-4847-99fe-c4518e82c86f";
+            var exepectedCompensation1 = new Compensation { Salary = 100000, EffectiveDate = DateTime.Parse("01/01/2025") };
+            var exepectedCompensation2 = new Compensation { Salary = 90000, EffectiveDate = DateTime.Parse("01/01/2024") };
+
+            // Execute
+            var getRequestTask = _httpClient.GetAsync($"api/employees/{employeeId}/compensations");
+            var response = getRequestTask.Result;
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            var compensations = response.DeserializeContent<List<Compensation>>();
+            Assert.AreEqual(2, compensations.Count);
+
+            Assert.IsNotNull(compensations[1].Employee?.EmployeeId);
+            Assert.AreEqual(employeeId, compensations[1].Employee.EmployeeId);
+            Assert.AreEqual(exepectedCompensation1.Salary, compensations[1].Salary);
+            Assert.AreEqual(exepectedCompensation1.EffectiveDate, compensations[1].EffectiveDate);
+            // Could write private helpers to compare Compensation objects (and other classes too)
+
+            Assert.IsNotNull(compensations[0].Employee?.EmployeeId);
+            Assert.AreEqual(employeeId, compensations[0].Employee.EmployeeId);
+            Assert.AreEqual(exepectedCompensation2.Salary, compensations[0].Salary);
+            Assert.AreEqual(exepectedCompensation2.EffectiveDate, compensations[0].EffectiveDate);
+        }
+
+        [TestMethod]
+        public void GetEmployeeCompensations_EmployeeWithSingleCompensation_ReturnsCompensation()
+        {
+            // Arrange
+            var employeeId = "b7839309-3348-463b-a7e3-5de1c168beb3";
+            var exepectedCompensation1 = new Compensation { Salary = 200000, EffectiveDate = DateTime.Parse("02/01/2025") };
+
+            // Execute
+            var getRequestTask = _httpClient.GetAsync($"api/employees/{employeeId}/compensations");
+            var response = getRequestTask.Result;
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            var compensations = response.DeserializeContent<List<Compensation>>();
+            Assert.AreEqual(1, compensations.Count);
+
+            Assert.IsNotNull(compensations[0].Employee?.EmployeeId);
+            Assert.AreEqual(employeeId, compensations[0].Employee.EmployeeId);
+            Assert.AreEqual(exepectedCompensation1.Salary, compensations[0].Salary);
+            Assert.AreEqual(exepectedCompensation1.EffectiveDate, compensations[0].EffectiveDate);
+        }
+
+        [TestMethod]
+        public void GetEmployeeCompensations_EmployeeWithNoCompensations_ReturnsEmptyList()
+        {
+            // Arrange
+            var employeeId = "c0c2293d-16bd-4603-8e08-638a9d18b22c";
+
+            // Execute
+            var getRequestTask = _httpClient.GetAsync($"api/employees/{employeeId}/compensations");
+            var response = getRequestTask.Result;
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            var compensations = response.DeserializeContent<List<Compensation>>();
+            Assert.IsNotNull(compensations);
+            Assert.AreEqual(0, compensations.Count);
+        }
+
+        [TestMethod]
+        public void GetEmployeeCompensations_NonexistingEmployeeId_ReturnsNotFound()
+        {
+            // Execute
+            var getRequestTask = _httpClient.GetAsync($"api/employees/doesnotexist/compensations");
             var response = getRequestTask.Result;
 
             // Assert

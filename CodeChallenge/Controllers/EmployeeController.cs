@@ -1,5 +1,7 @@
-﻿using CodeChallenge.Models;
+﻿using System.Collections.Generic;
+using CodeChallenge.Models;
 using CodeChallenge.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -76,6 +78,35 @@ namespace CodeChallenge.Controllers
                 return NotFound();
 
             return Ok(employeeDirectReports);
+        }
+
+        [HttpGet("{id}/compensations")]
+        public ActionResult<List<Compensation>> GetEmployeeCompensations(string id)
+        {
+            _logger.LogDebug("Received employee compensation get request for '{id}'", id);
+
+            ApiResponse response = _employeeService.GetCompensations(id);
+            return ParseApiResponse<List<Compensation>>(response);
+        }
+
+        // Allows service layer to inform controller what type of status code to return.
+        // This way I can know from the controller's perspective whether null or empty means the resource (the employee)
+        // could not be found (returns a 404) or that there was no Compensation found for the employee (returns an empty 200)
+        //
+        // Main downside to this approach is that service layer returns ApiResponse which doesn't make it
+        // immediately obvious what the content return type would be (e.g. List<Compensation>).
+        //
+        // Just showing that I have comfort/experience with higher level decisions/design beyond just adding a barebones endpoint with basic logic
+        private ActionResult<T> ParseApiResponse<T>(ApiResponse response)
+        {
+            if (response.StatusCode == StatusCodes.Status200OK && response is ApiResponse<T> converted)
+                return Ok(converted.Content);
+
+            return response.StatusCode switch // Would add other status codes as needed
+            {
+                StatusCodes.Status404NotFound => NotFound(),
+                _ => Problem(),
+            };
         }
     }
 }

@@ -8,11 +8,13 @@ namespace CodeChallenge.Services
     public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _employeeRepository;
+        private readonly ICompensationRepository _compensationRepository;
         private readonly ILogger<EmployeeService> _logger;
 
-        public EmployeeService(ILogger<EmployeeService> logger, IEmployeeRepository employeeRepository)
+        public EmployeeService(ILogger<EmployeeService> logger, IEmployeeRepository employeeRepository, ICompensationRepository compensationRepository)
         {
             _employeeRepository = employeeRepository;
+            _compensationRepository = compensationRepository;
             _logger = logger;
         }
 
@@ -78,6 +80,15 @@ namespace CodeChallenge.Services
             }
 
             return null;
+        }
+
+        public ApiResponse GetCompensations(string id)
+        {
+            if (GetById(id) == null)
+                return ApiResponse.NotFound;
+
+            var compensations = _compensationRepository.GetCompensations(id);
+            return ApiResponse.Ok(compensations ?? new List<Compensation>());
         }
 
         private static int GetNumberOfReports(Employee employee)
